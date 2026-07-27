@@ -77,12 +77,14 @@ echo Workers: %WORKERS%
 echo ----------------------------------------
 echo.
 
-"%PYTHON_EXE%" "%SCRIPT%" convert ^
-    --input-dir "%INPUT_DIR%" ^
-    --output-dir "%OUTPUT_DIR%" ^
-    --converter "%CONVERTER_EXE%" ^
-    --stage-dir "%STAGE_DIR%" ^
-    --workers %WORKERS%
+rem IMPORTANT: This call is written as a single physical line on purpose.
+rem Windows cmd's '^' line-continuation only works when the file is saved
+rem with CRLF line endings. If the bat is downloaded with LF line endings
+rem (which happens for files committed from a Unix/Linux toolchain), '^' is
+rem silently ignored and the next line is executed as a brand-new command,
+rem producing confusing "'xxx' is not recognized" errors. Writing the
+rem whole command on one line avoids the dependency on line-ending encoding.
+"%PYTHON_EXE%" "%SCRIPT%" convert --input-dir "%INPUT_DIR%" --output-dir "%OUTPUT_DIR%" --converter "%CONVERTER_EXE%" --stage-dir "%STAGE_DIR%" --workers %WORKERS%
 
 set "EXITCODE=%ERRORLEVEL%"
 echo.
