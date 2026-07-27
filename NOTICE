@@ -1,0 +1,60 @@
+NOTICE - Third-Party Components
+================================
+
+This project bundles several third-party binary components that are NOT
+covered by the project's MIT license. Each retains its original license and
+copyright. The MIT license above applies only to the project's own source
+code (kfb_to_qupath_svs.py and run_convert.bat).
+
+1. KFbioConverter.exe and ImageOperationLib.dll
+   ---------------------------------------------
+   Vendor   : Konfoong Bio Information Tech Co., Ltd. (KFbio)
+   Files    : converter/x86/KFbioConverter.exe
+              converter/x86/ImageOperationLib.dll
+              converter/x86/turbojpeg.dll (libjpeg-turbo, BSD-style)
+   License  : Proprietary / redistributed under vendor's distribution terms.
+   Purpose  : Performs the actual KFB -> Aperio-like TIFF conversion.
+   Note     : These binaries are 32-bit and are redistributed here solely to
+              keep the package portable. They remain the property of their
+              respective copyright holders. If you are the vendor and wish
+              the binaries to be removed from this repository, please open
+              an issue and they will be taken down promptly.
+
+2. Microsoft Visual C++ 2010 SP1 MFC Runtime (x86)
+   ------------------------------------------------
+   Files    : converter/x86/mfc100u.dll
+              converter/x86/MSVCR100.dll
+              converter/x86/msvcp100.dll
+   License  : Microsoft EULA / Microsoft Visual C++ 2010 Redistributable.
+   Purpose  : Required by the 32-bit KFbioConverter.exe (links against
+              MFC100 and the CRT). Without them next to the executable the
+              converter exits with STATUS_DLL_NOT_FOUND (0xC0000135).
+   Note     : You may alternatively install the "Microsoft Visual C++ 2010
+              x86 Redistributable" system-wide and remove these DLLs.
+
+3. Python 3.12 Runtime (portable)
+   --------------------------------
+   Files    : runtime/python.exe
+              runtime/python3.dll
+              runtime/python312.dll
+              runtime/vcruntime140.dll
+              runtime/vcruntime140_1.dll
+              runtime/Lib/  (Python standard library)
+              runtime/DLLs/ (Python C extension modules)
+              runtime/Lib/site-packages/pip/  (pip 24.0)
+   License  : PSF License Agreement (Python Software Foundation License).
+   Purpose  : Bundled so the package runs on any 64-bit Windows machine
+              without requiring a system-wide Python install.
+   Source   : https://www.python.org/downloads/release/python-3120/
+
+4. libjpeg-turbo
+   --------------
+   Files    : converter/x86/turbojpeg.dll
+   License  : BSD 3-Clause + libjpeg + zlib licenses (see libjpeg-turbo
+              project for full text).
+   Purpose  : JPEG decoding used by the KFbio image library.
+
+Trademarks
+----------
+All product names, logos and brands are property of their respective owners.
+Use of these names, logos and brands does not imply endorsement.
