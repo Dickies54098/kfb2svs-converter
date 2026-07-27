@@ -43,6 +43,9 @@
 - `INPUT_DIR does not exist`：INI 中的输入路径拼写错误，或目录不存在。
 - `'xxx' is not recognized...`：BAT 被保存成了 Unix LF 换行；请重新下载
   最新版，不要再编辑 BAT。
+- `WARNING: KFbioConverter reported exit ... but produced a structurally valid
+  SVS`：旧版转换器返回了错误退出码，但程序已验证 TIFF/IFD 结构完整，
+  会继续清理和发布，无需人工处理。
 
 ---
 
