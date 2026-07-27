@@ -8,6 +8,44 @@
 
 ---
 
+## 中文快速使用（Windows）
+
+> **不要修改 `run_convert.bat`，也不要直接修改
+> `run_convert.example.ini`。** 实际配置只写入
+> `run_convert.local.ini`。
+
+1. 解压或克隆仓库，进入项目文件夹。
+2. 第一次双击 `run_convert.bat`。程序会自动创建
+   `run_convert.local.ini`，然后提示你编辑该文件。
+3. 用记事本打开 `run_convert.local.ini`，填写：
+
+   ```ini
+   INPUT_DIR=E:\存放KFB文件的目录
+   OUTPUT_DIR=E:\保存SVS文件的目录
+   WORKERS=2
+   ```
+
+   路径不要加引号。机械硬盘、移动硬盘建议 `WORKERS=2`；NVMe
+   固态硬盘可使用 `3` 或 `4`。
+
+4. 保存并关闭 INI 文件，再次双击 `run_convert.bat` 开始转换。
+5. 已存在的 SVS 会自动跳过，中断后可以再次运行以继续处理。
+
+如果手动创建配置文件，它必须与 BAT 位于同一目录，且文件名必须
+**完全等于** `run_convert.local.ini`。请在文件资源管理器中启用
+“查看 → 显示 → 文件扩展名”，确认它没有被保存成
+`run_convert.local.ini.txt`。
+
+常见报错：
+
+- `Configuration file not found`：缺少准确命名的
+  `run_convert.local.ini`；最新版首次运行会自动创建。
+- `INPUT_DIR does not exist`：INI 中的输入路径拼写错误，或目录不存在。
+- `'xxx' is not recognized...`：BAT 被保存成了 Unix LF 换行；请重新下载
+  最新版，不要再编辑 BAT。
+
+---
+
 ## 📖 Overview
 
 `kfb2svs-converter` is a self-contained Windows toolkit that converts digital
@@ -51,7 +89,8 @@ The package ships with a **bundled Python 3.12 runtime**, so it runs on any
 ```
 kfb2svs-converter/
 ├── run_convert.bat          # One-click entry (keep this file unchanged)
-├── run_convert.example.ini  # Copy to run_convert.local.ini and edit
+├── run_convert.example.ini  # Template (do not edit directly)
+├── run_convert.local.ini    # Created on first run; local settings (Git-ignored)
 ├── kfb_to_qupath_svs.py     # Conversion + SVS cleanup logic (pure stdlib)
 ├── converter/
 │   └── x86/
@@ -77,9 +116,11 @@ kfb2svs-converter/
 
 ### Option A — Use the bundled portable runtime (recommended, zero-install)
 
-1. **Clone or download** this repository to any local folder, e.g. `D:\kfb2svs-converter`.
-2. **Copy** `run_convert.example.ini` to `run_convert.local.ini`.
-3. **Edit the two paths** in `run_convert.local.ini`:
+1. **Clone or download** this repository to any local folder, e.g.
+   `D:\kfb2svs-converter`.
+2. **Double-click `run_convert.bat` once.** It creates
+   `run_convert.local.ini` from the example and asks you to edit it.
+3. **Edit the two paths** in `run_convert.local.ini` (not in the example):
 
    ```ini
    INPUT_DIR=C:\path\to\your\kfb_input
@@ -98,11 +139,13 @@ kfb2svs-converter/
 
    Use `2` for HDD/USB (default), or `3`–`4` for a fast NVMe SSD.
 
-5. **Double-click `run_convert.bat`**. Done.
+5. **Save the INI, then double-click `run_convert.bat` again.** Done.
 
 `run_convert.local.ini` is ignored by Git, so machine-specific paths are not
 published accidentally. Keeping configuration outside the batch file also
 prevents text editors from changing its required Windows CRLF line endings.
+If you create the file manually, enable file-name extensions in File Explorer
+and make sure it is not accidentally named `run_convert.local.ini.txt`.
 
 ### Option B — Use your own Python 3.10+ installation
 

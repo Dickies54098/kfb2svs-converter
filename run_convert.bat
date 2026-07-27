@@ -9,8 +9,8 @@ rem ===========================================================================
 rem  KFB to QuPath-compatible SVS Converter - One-click Batch Entry
 rem ---------------------------------------------------------------------------
 rem  USAGE:
-rem    1. Copy run_convert.example.ini to run_convert.local.ini and edit it.
-rem    2. Double-click this file to start the conversion.
+rem    1. Double-click once to create run_convert.local.ini.
+rem    2. Edit run_convert.local.ini, then double-click this file again.
 rem
 rem  Everything else is resolved automatically relative to this batch file.
 rem ===========================================================================
@@ -19,12 +19,24 @@ rem ============================ USER CONFIG ===================================
 rem  Keeping machine-specific paths outside this batch file prevents editors
 rem  from accidentally changing this script's required CRLF line endings.
 set "CONFIG_FILE=%ROOT%\run_convert.local.ini"
+set "EXAMPLE_CONFIG=%ROOT%\run_convert.example.ini"
 set "WORKERS=2"
 
 if not exist "%CONFIG_FILE%" (
-    echo [ERROR] Configuration file not found: %CONFIG_FILE%
-    echo Copy run_convert.example.ini to run_convert.local.ini and edit the paths.
-    goto :error
+    if not exist "%EXAMPLE_CONFIG%" (
+        echo [ERROR] Configuration template not found: %EXAMPLE_CONFIG%
+        goto :error
+    )
+    copy /y "%EXAMPLE_CONFIG%" "%CONFIG_FILE%" >nul
+    if errorlevel 1 (
+        echo [ERROR] Could not create configuration file: %CONFIG_FILE%
+        goto :error
+    )
+    echo [SETUP] Created configuration file:
+    echo %CONFIG_FILE%
+    echo.
+    echo Edit INPUT_DIR and OUTPUT_DIR in that file, save it, then run this BAT again.
+    goto :setup
 )
 
 for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%CONFIG_FILE%") do (
@@ -111,3 +123,8 @@ exit /b %EXITCODE%
 echo.
 pause
 exit /b 1
+
+:setup
+echo.
+pause
+exit /b 0
