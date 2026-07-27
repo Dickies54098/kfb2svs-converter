@@ -516,21 +516,90 @@ def process_existing_svs(
     return result
 
 
+def decode_converter_output(data: bytes) -> str:
+    """Decode legacy KFbio console output without garbling Chinese text."""
+    for encoding in ("utf-8", "gb18030"):
+        try:
+            return data.decode(encoding)
+        except UnicodeDecodeError:
+            pass
+    return data.decode("utf-8", errors="replace")
+
+
+def validate_converter_output(path: Path) -> int:
+    """Validate a raw converter result and return its reachable IFD count.
+
+    Some KFbioConverter builds print ``OK`` and write a complete SVS but still
+    exit with 0xFFFFFFFF (-1).  The generated TIFF structure is more reliable
+    than that process status.  Validation remains strict: every reachable IFD
+    and referenced tag/pixel range must fit inside the file, and the output
+    must contain a baseline plus at least one Aperio pyramid level.
+    """
+    file_size = path.stat().st_size
+    if file_size < 8:
+        raise ValueError(f"converter output is empty or too small ({file_size} bytes)")
+
+    with path.open("rb") as f:
+        layout = read_layout(f)
+        pages = read_ifd_chain(f, layout)
+        aperio_levels = [
+            page for page in pages[1:]
+            if is_aperio_pyramid_page(f, layout, page)
+        ]
+        if not aperio_levels:
+            raise ValueError(
+                "converter output has no Aperio pyramid level after the baseline"
+            )
+        for index, page in enumerate(pages):
+            page_dimensions(f, layout, page)
+            referenced_end = page_referenced_end(f, layout, page)
+            if referenced_end > file_size:
+                raise ValueError(
+                    f"IFD {index} references byte {referenced_end}, "
+                    f"past end of file {file_size}"
+                )
+    return len(pages)
+
+
+def format_converter_exit_code(returncode: int) -> str:
+    if returncode > 0x7FFFFFFF:
+        return f"{returncode} (signed {returncode - 0x100000000})"
+    return str(returncode)
+
+
 def run_converter(converter: Path, source: Path, destination: Path, layers: int) -> None:
     command = [str(converter), str(source), str(destination), str(layers)]
     completed = subprocess.run(
         command,
         cwd=str(converter.parent),
-        text=True,
-        encoding="utf-8",
-        errors="replace",
         capture_output=True,
     )
-    output = (completed.stdout or "") + (completed.stderr or "")
-    if completed.returncode != 0 or "OK" not in output or not destination.exists():
+    output = decode_converter_output(
+        (completed.stdout or b"") + (completed.stderr or b"")
+    )
+    try:
+        ifd_count = validate_converter_output(destination)
+    except (OSError, ValueError) as validation_error:
         raise RuntimeError(
-            f"KFbioConverter failed for {source.name} (exit {completed.returncode}):\n"
+            f"KFbioConverter failed for {source.name} "
+            f"(exit {format_converter_exit_code(completed.returncode)}):\n"
+            f"Generated output validation failed: {validation_error}\n"
             f"{output[-1200:]}"
+        ) from validation_error
+
+    warnings: list[str] = []
+    if completed.returncode != 0:
+        warnings.append(
+            f"exit {format_converter_exit_code(completed.returncode)}"
+        )
+    if "OK" not in output:
+        warnings.append("no OK marker in converter output")
+    if warnings:
+        print(
+            f"  WARNING: KFbioConverter reported {', '.join(warnings)} for "
+            f"{source.name}, but produced a structurally valid "
+            f"{ifd_count}-IFD SVS; continuing.",
+            file=sys.stderr,
         )
 
 
