@@ -25,3 +25,6 @@ Desktop.ini
 
 # Logs
 *.log
+
+# Machine-specific conversion paths.
+run_convert.local.ini

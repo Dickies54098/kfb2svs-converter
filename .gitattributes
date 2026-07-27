@@ -1,0 +1,4 @@
+# Keep CRLF bytes in repository archives. Windows cmd.exe can misparse LF-only
+# scripts and execute truncated comments or continuation lines as commands.
+*.bat -text
+*.cmd -text

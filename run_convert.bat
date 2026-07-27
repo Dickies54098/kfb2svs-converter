@@ -1,39 +1,49 @@
 @echo off
 chcp 65001 >nul
-setlocal enabledelayedexpansion
+setlocal DisableDelayedExpansion
+
+set "ROOT=%~dp0"
+set "ROOT=%ROOT:~0,-1%"
 
 rem ===========================================================================
 rem  KFB to QuPath-compatible SVS Converter - One-click Batch Entry
 rem ---------------------------------------------------------------------------
 rem  USAGE:
-rem    1. Edit the two variables below (INPUT_DIR and OUTPUT_DIR).
+rem    1. Copy run_convert.example.ini to run_convert.local.ini and edit it.
 rem    2. Double-click this file to start the conversion.
 rem
-rem  You ONLY need to change the two absolute paths in the "USER CONFIG" block.
-rem  Everything else (stage folder, converter path, python runtime) is resolved
-rem  automatically relative to this batch file.
+rem  Everything else is resolved automatically relative to this batch file.
 rem ===========================================================================
 
 rem ============================ USER CONFIG ===================================
-rem  Put your own absolute paths between the quotes. Use backslashes.
-rem  Examples:
-rem    set "INPUT_DIR=C:\path\to\your\kfb_input"
-rem    set "OUTPUT_DIR=C:\path\to\your\svs_output"
-
-set "INPUT_DIR=C:\path\to\your\kfb_input"
-set "OUTPUT_DIR=C:\path\to\your\svs_output"
-
-rem  Optional: number of files to convert in parallel.
-rem  External HDD / USB drive -> 2    (default)
-rem  Fast NVMe SSD            -> 3 or 4
+rem  Keeping machine-specific paths outside this batch file prevents editors
+rem  from accidentally changing this script's required CRLF line endings.
+set "CONFIG_FILE=%ROOT%\run_convert.local.ini"
 set "WORKERS=2"
 
+if not exist "%CONFIG_FILE%" (
+    echo [ERROR] Configuration file not found: %CONFIG_FILE%
+    echo Copy run_convert.example.ini to run_convert.local.ini and edit the paths.
+    goto :error
+)
+
+for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%CONFIG_FILE%") do (
+    if /i "%%A"=="INPUT_DIR" set "INPUT_DIR=%%B"
+    if /i "%%A"=="OUTPUT_DIR" set "OUTPUT_DIR=%%B"
+    if /i "%%A"=="WORKERS" set "WORKERS=%%B"
+)
+
+if not defined INPUT_DIR (
+    echo [ERROR] INPUT_DIR is missing from %CONFIG_FILE%
+    goto :error
+)
+if not defined OUTPUT_DIR (
+    echo [ERROR] OUTPUT_DIR is missing from %CONFIG_FILE%
+    goto :error
+)
 rem ========================== END USER CONFIG ================================
 rem  Do not edit below unless you know what you are doing.
 rem ===========================================================================
-
-set "ROOT=%~dp0"
-set "ROOT=%ROOT:~0,-1%"
 
 rem Resolve the bundled Python runtime and KFbioConverter automatically.
 set "PYTHON_EXE=%ROOT%\runtime\python.exe"
@@ -64,7 +74,7 @@ if not exist "%SCRIPT%" (
 )
 if not exist "%INPUT_DIR%" (
     echo [ERROR] INPUT_DIR does not exist: %INPUT_DIR%
-    echo Please edit the USER CONFIG block at the top of this batch file.
+    echo Please edit %CONFIG_FILE%.
     goto :error
 )
 

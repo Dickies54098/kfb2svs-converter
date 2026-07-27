@@ -32,7 +32,7 @@ The package ships with a **bundled Python 3.12 runtime**, so it runs on any
 
 ## ✨ Features
 
-- ⚡ **One-click batch entry** — edit two paths in `run_convert.bat` and go.
+- ⚡ **One-click batch entry** — configure two paths in a local INI file and go.
 - 🧹 **QuPath-ready output** — no extra thumbnail/label series polluting the
   image list.
 - 🔒 **Non-destructive** — source KFB files are never modified; cleaned SVS
@@ -50,7 +50,8 @@ The package ships with a **bundled Python 3.12 runtime**, so it runs on any
 
 ```
 kfb2svs-converter/
-├── run_convert.bat          # One-click entry — edit two paths here
+├── run_convert.bat          # One-click entry (keep this file unchanged)
+├── run_convert.example.ini  # Copy to run_convert.local.ini and edit
 ├── kfb_to_qupath_svs.py     # Conversion + SVS cleanup logic (pure stdlib)
 ├── converter/
 │   └── x86/
@@ -77,12 +78,12 @@ kfb2svs-converter/
 ### Option A — Use the bundled portable runtime (recommended, zero-install)
 
 1. **Clone or download** this repository to any local folder, e.g. `D:\kfb2svs-converter`.
-2. **Open `run_convert.bat`** in a text editor (Notepad, VS Code, etc.).
-3. **Edit the two paths** in the `USER CONFIG` block at the top:
+2. **Copy** `run_convert.example.ini` to `run_convert.local.ini`.
+3. **Edit the two paths** in `run_convert.local.ini`:
 
-   ```bat
-   set "INPUT_DIR=C:\path\to\your\kfb_input"
-   set "OUTPUT_DIR=C:\path\to\your\svs_output"
+   ```ini
+   INPUT_DIR=C:\path\to\your\kfb_input
+   OUTPUT_DIR=C:\path\to\your\svs_output
    ```
 
    - `INPUT_DIR` — folder that contains your `.kfb` files.
@@ -91,11 +92,17 @@ kfb2svs-converter/
 
 4. **Optional** — adjust the worker count for your storage:
 
-   ```bat
-   set "WORKERS=2"   rem HDD/USB: 2 (default). NVMe SSD: 3 or 4.
+   ```ini
+   WORKERS=2
    ```
 
+   Use `2` for HDD/USB (default), or `3`–`4` for a fast NVMe SSD.
+
 5. **Double-click `run_convert.bat`**. Done.
+
+`run_convert.local.ini` is ignored by Git, so machine-specific paths are not
+published accidentally. Keeping configuration outside the batch file also
+prevents text editors from changing its required Windows CRLF line endings.
 
 ### Option B — Use your own Python 3.10+ installation
 
